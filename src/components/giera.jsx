@@ -30,10 +30,19 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog"
-  
+import { useState } from "react"
+import PocketBase from 'pocketbase';
+const pb = new PocketBase(`http://${process.env.addres}:8080`);
 
+export default function Giera({nazwa,description,image,availablee,cena,id,deletee}){
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [available, setAvailable] = useState(availablee)
 
-export default function Giera({nazwa,description,image,available,cena}){
+  const handleDeleteClick = (e) => {
+    e.preventDefault()
+    setAlertOpen(true)
+  }
 
     return(
         <Card className="w-[200px] h-[230px]">
@@ -46,40 +55,46 @@ export default function Giera({nazwa,description,image,available,cena}){
                 </span>
                 <CardDescription>{description}</CardDescription>
             </CardContent>
-            <CardFooter>
-                <Switch checked={available}/>
+            <CardFooter className="flex justify-between items-center">
+      <Switch checked={available} onCheckedChange={setAvailable} />
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger>...</DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem><Pencil/>Edit</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem >
-                        
-                        <AlertDialog>
-                          <AlertDialogTrigger><span className="text-red-400 hover:text-red-600"><Trash/>Delete</span></AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your account
-                                and remove your data from our servers.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction>Continue</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-
-
-            </CardFooter>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenuTrigger>...</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+              <AlertDialogTrigger asChild>
+                <button onClick={handleDeleteClick} className="flex items-center text-red-500 hover:text-red-600">
+                  <Trash className="mr-2 h-4 w-4" />
+                  Delete
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your account
+                    and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={async ()=>{
+                    await pb.collection('gierki').delete(id);
+                    deletee(id)
+                  }}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </CardFooter>
         </Card>
 
     )

@@ -70,11 +70,20 @@ export default function Home() {
     }
   }
 
+  const onDelete = (id)=>{
+    setGierki((prev)=>(
+      prev.filter((el)=>{
+        return el.id !=id
+      })
+    ))
+  }
+
+
 
   return (
     <div className="flex flex-row flex-wrap">
       {gierki && gierki.map((gra,idx)=>(
-        <Giera key={gra.id} nazwa={gra.nazwa} description={gra.opis} cena={gra.cena} image={pb.files.getUrl(gra,gra.zdjecie)} available={gra.dostepne}/>
+        <Giera key={gra.id} nazwa={gra.nazwa} description={gra.opis} cena={gra.cena} image={pb.files.getUrl(gra,gra.zdjecie)} availablee={gra.dostepne} id={gra.id} deletee={onDelete}/>
       ))}
       <Sheet>
         <SheetTrigger>
