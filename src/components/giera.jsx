@@ -1,3 +1,4 @@
+"use client"
 import {
     Card,
     CardContent,
@@ -30,23 +31,63 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog"
+
+  import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog"
+
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+
 import { useState } from "react"
 import PocketBase from 'pocketbase';
 const pb = new PocketBase(`http://${process.env.addres}:8080`);
 
-export default function Giera({nazwa,description,image,availablee,cena,id,deletee}){
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [alertOpen, setAlertOpen] = useState(false)
+export default function Giera({nazwa,description,image,availablee,cena,id,deletee,updatee}){
   const [available, setAvailable] = useState(availablee)
+  const [dane,setDane] = useState({nazwa:nazwa,opis:description,cena:cena,dostepne:availablee})
+  const [zdjecie,setZdjecie] = useState(null)
+
 
   const handleDeleteClick = (e) => {
     e.preventDefault()
     setAlertOpen(true)
   }
 
+  const handleInputChange = (idx, e)=>{
+    setDane((prev)=>({
+      ...prev,[idx]:e.target.value
+    }))
+    console.log(dane)
+  }
+  const handleZdjecie = (e)=>{
+    setZdjecie(e.target.files[0])
+    console.log(e.target.files[0])
+  }
+
+  const update = async ()=>{
+    const formData = new FormData()
+    formData.append('nazwa', dane.nazwa)
+    formData.append('opis', dane.opis)
+    formData.append('cena', dane.cena)
+    // formData.append('dostepne', dane.dostepne)
+    formData.append('zdjecie',zdjecie)
+    console.log(formData)
+    try {
+      const record = await pb.collection('gierki').update(id, formData);
+      updatee(record);
+    } catch (error) {
+      console.error('Error updating record:', error);
+    }
+    }
     return(
-        <Card className="w-[200px] h-[230px]">
-            <CardHeader className="w-[200px] h-[100px] relative">
+        <Card className="w-[250px] h-[330px]">
+            <CardHeader className="w-[250px] h-[170px] relative">
                 <Image src={image} fill alt={nazwa}/>
             </CardHeader>
             <CardContent className='pt-4'>
@@ -56,23 +97,59 @@ export default function Giera({nazwa,description,image,availablee,cena,id,delete
                 <CardDescription>{description}</CardDescription>
             </CardContent>
             <CardFooter className="flex justify-between items-center">
-      <Switch checked={available} onCheckedChange={setAvailable} />
 
-      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+      <DropdownMenu>
         <DropdownMenuTrigger>...</DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
+          <DropdownMenuItem asChild>
+          <Dialog>
+            <DialogTrigger>
+              <span className="flex items-center">
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </span>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete your account
+                  and remove your data from our servers.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="nazwa">Nazwa</Label>
+              <Input defaultValue={nazwa} type="text" id="nazwa" placeholder="nazwa" onChange={(e)=>{handleInputChange("nazwa", e)}}/>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="opis">Opis</Label>
+              <Input defaultValue={description} type="text" id="opis" placeholder="opis" onChange={(e)=>{handleInputChange("opis", e)}}/>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="cena">Cena</Label>
+              <Input defaultValue={cena} type="number" id="cena" placeholder="cena" onChange={(e)=>{handleInputChange("cena", e)}}/>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="dostepne">Dostępne</Label>
+              <Input defaultValue={availablee} type="number" max={1} min={0} id="dostepne" placeholder="dostepne" onChange={(e)=>{handleInputChange("dostepne", e)}}/>
+            </div>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="image">Zdjęcie</Label>
+              <Input type="file" id="image" placeholder="Zdjęcie" onChange={(e)=>{handleZdjecie(e)}}/>
+            </div>
+            <Button onClick={update}>Submit</Button>
+            </DialogContent>
+          </Dialog>
           </DropdownMenuItem>
+
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+          
+          <DropdownMenuItem asChild>
+            <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button onClick={handleDeleteClick} className="flex items-center text-red-500 hover:text-red-600">
+                <span className="flex items-center text-red-500 hover:text-red-600">
                   <Trash className="mr-2 h-4 w-4" />
                   Delete
-                </button>
+                </span>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -94,6 +171,8 @@ export default function Giera({nazwa,description,image,availablee,cena,id,delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Switch checked={available} onCheckedChange={setAvailable} />
     </CardFooter>
         </Card>
 

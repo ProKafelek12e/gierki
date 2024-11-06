@@ -16,6 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { Item } from '@radix-ui/react-dropdown-menu';
 
 
 const pb = new PocketBase(`http://${process.env.addres}:8080`);
@@ -57,7 +58,7 @@ export default function Home() {
     formData.append("nazwa", dane.nazwa)
     formData.append("opis", dane.opis)
     formData.append("cena", dane.cena)
-    formData.append("dostepne",dane.dostepne)
+    if(zdjecie)
     formData.append("zdjecie",zdjecie)
     try{
       const record = await pb.collection('gierki').create(formData);
@@ -77,13 +78,23 @@ export default function Home() {
       })
     ))
   }
-
+  const onUpdate = (record)=>{
+    var index = null
+    var tmpGierki = [...gierki]
+    for(let i in gierki){
+      if(gierki[i].id == record.id) index=i
+    }
+    console.log(record,index)
+    tmpGierki[index] = record
+    setGierki(tmpGierki)
+    console.log(index)
+  }
 
 
   return (
     <div className="flex flex-row flex-wrap">
       {gierki && gierki.map((gra,idx)=>(
-        <Giera key={gra.id} nazwa={gra.nazwa} description={gra.opis} cena={gra.cena} image={pb.files.getUrl(gra,gra.zdjecie)} availablee={gra.dostepne} id={gra.id} deletee={onDelete}/>
+        <Giera key={gra.id} nazwa={gra.nazwa} description={gra.opis} cena={gra.cena} image={pb.files.getUrl(gra,gra.zdjecie)} availablee={gra.dostepne} id={gra.id} deletee={onDelete} updatee={onUpdate}/>
       ))}
       <Sheet>
         <SheetTrigger>
@@ -108,10 +119,6 @@ export default function Home() {
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="cena">Cena</Label>
               <Input type="number" id="cena" placeholder="cena" onChange={(e)=>{handleInputChange("cena", e)}}/>
-            </div>
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="dostepne">Dostępne</Label>
-              <Input type="number" max={1} min={0} id="dostepne" placeholder="dostepne" onChange={(e)=>{handleInputChange("dostepne", e)}}/>
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="image">Zdjęcie</Label>
