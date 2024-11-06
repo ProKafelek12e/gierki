@@ -85,6 +85,18 @@ export default function Giera({nazwa,description,image,availablee,cena,id,delete
       console.error('Error updating record:', error);
     }
     }
+    const handleToggle = async () => {
+      try {
+        // Update the backend with the new "available" status
+        await pb.collection('gierki').update(id, { dostepne: !available });
+  
+        // Update the local state after successful update
+        setAvailable((prev) => !prev);
+      } catch (error) {
+        console.error('Error updating availability:', error);
+      }
+    };
+  
     return(
         <Card className="w-[250px] h-[330px]">
             <CardHeader className="w-[250px] h-[170px] relative">
@@ -92,7 +104,7 @@ export default function Giera({nazwa,description,image,availablee,cena,id,delete
             </CardHeader>
             <CardContent className='pt-4'>
                 <span className="flex flex-row justify-between">
-                    <CardTitle>{nazwa}</CardTitle><CardTitle>{cena}$</CardTitle>
+                    <CardTitle>{nazwa}</CardTitle><CardDescription>{cena}$</CardDescription>
                 </span>
                 <CardDescription>{description}</CardDescription>
             </CardContent>
@@ -172,7 +184,10 @@ export default function Giera({nazwa,description,image,availablee,cena,id,delete
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Switch checked={available} onCheckedChange={setAvailable} />
+      <Switch
+      checked={available}
+      onCheckedChange={handleToggle} // Toggle handler
+    />
     </CardFooter>
         </Card>
 

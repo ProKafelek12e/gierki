@@ -26,6 +26,7 @@ export default function Home() {
   const [gierki,setGierki] = useState(null)
   const [dane,setDane] = useState({nazwa:null,opis:null,cena:null,dostepne:null})
   const [zdjecie,setZdjecie] = useState(null)
+  const [open,setOpen] = useState(false)
 
   useEffect(()=>{
     const getGry = async ()=>{
@@ -69,6 +70,7 @@ export default function Home() {
     }catch(error){
       console.log(error)
     }
+    setOpen(false)
   }
 
   const onDelete = (id)=>{
@@ -96,8 +98,8 @@ export default function Home() {
       {gierki && gierki.map((gra,idx)=>(
         <Giera key={gra.id} nazwa={gra.nazwa} description={gra.opis} cena={gra.cena} image={pb.files.getUrl(gra,gra.zdjecie)} availablee={gra.dostepne} id={gra.id} deletee={onDelete} updatee={onUpdate}/>
       ))}
-      <Sheet>
-        <SheetTrigger>
+      <Sheet open={open}>
+        <SheetTrigger onClick={()=>{setOpen(true)}}>
           <Card className="w-[200px] h-[230px]">
             <Plus className="flex justify-center items-center cursor-pointer" size={200}/>
           </Card>
